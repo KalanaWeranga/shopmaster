@@ -1,5 +1,19 @@
 const { pool } = require('../config/db');
 
+const parseColors = (colors) => {
+  if (!colors) return [];
+  if (Array.isArray(colors)) return colors;
+  const str = String(colors).trim();
+  if (!str) return [];
+  try {
+    const parsed = JSON.parse(str);
+    return Array.isArray(parsed) ? parsed : [String(parsed)];
+  } catch {
+    // Fallback: treat as comma-separated string e.g. "Dark Blue,Brown"
+    return str.split(',').map(c => c.trim()).filter(Boolean);
+  }
+};
+
 const getAll = async (req, res) => {
   try {
     const { search, supplier_id, low_stock } = req.query;
@@ -29,7 +43,7 @@ const getAll = async (req, res) => {
     // Parse colors JSON
     const products = rows.map(p => ({
       ...p,
-      colors: p.colors ? JSON.parse(p.colors) : [],
+      colors: p.colors ? parseColors(p.colors) : [],
     }));
     res.json(products);
   } catch (err) {
@@ -47,7 +61,7 @@ const getOne = async (req, res) => {
     );
     if (!rows.length) return res.status(404).json({ message: 'Product not found' });
     const p = rows[0];
-    p.colors = p.colors ? JSON.parse(p.colors) : [];
+    p.colors = p.colors ? parseColors(p.colors) : [];
     res.json(p);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -64,7 +78,7 @@ const getByCode = async (req, res) => {
     );
     if (!rows.length) return res.status(404).json({ message: 'Product not found' });
     const p = rows[0];
-    p.colors = p.colors ? JSON.parse(p.colors) : [];
+    p.colors = p.colors ? parseColors(p.colors) : [];
     res.json(p);
   } catch (err) {
     res.status(500).json({ message: err.message });
