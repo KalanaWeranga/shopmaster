@@ -202,7 +202,9 @@ export default function InventoryPage() {
           <div className="form-grid form-grid-2" style={{ gap: 14 }}>
             <div className="form-group">
               <label className="form-label">Product Code *</label>
-              <input className="form-input" placeholder="e.g. PRD001" value={form.code} onChange={e => set('code', e.target.value)} required disabled={!!editProduct} />
+              <input className="form-input" placeholder="e.g. PRD001" value={form.code} onChange={e => set('code', e.target.value)} required 
+              // disabled={!!editProduct} 
+              />
             </div>
             <div className="form-group">
               <label className="form-label">Product Name *</label>
