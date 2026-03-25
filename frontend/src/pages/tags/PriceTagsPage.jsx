@@ -127,8 +127,20 @@ export default function PriceTagsPage() {
   const clearAll = () => setSelected({});
 
   const setCount = (id, val) => {
+    // Allow empty string while typing, store as-is
+    if (val === '' || val === '-') {
+      setTagCounts(prev => ({ ...prev, [id]: '' }));
+      return;
+    }
     const n = Math.max(0, parseInt(val) || 0);
     setTagCounts(prev => ({ ...prev, [id]: n }));
+  };
+
+  const handleCountBlur = (id, val) => {
+    // On blur, ensure we have a valid number
+    if (val === '' || isNaN(parseInt(val))) {
+      setTagCounts(prev => ({ ...prev, [id]: 0 }));
+    }
   };
 
   // Reset all counts to stock quantity
@@ -248,14 +260,18 @@ export default function PriceTagsPage() {
                               max="999"
                               value={count}
                               onChange={e => setCount(p.id, e.target.value)}
+                              onBlur={e => handleCountBlur(p.id, e.target.value)}
                               onClick={e => e.stopPropagation()}
+                              onFocus={e => e.target.select()}
                               style={{
-                                width: 64, padding: '4px 8px',
-                                background: 'var(--surface2)',
+                                width: 70, padding: '5px 8px',
+                                background: 'var(--surface3)',
                                 border: `1px solid ${count !== p.quantity ? 'var(--accent)' : 'var(--border)'}`,
-                                borderRadius: 6, color: count !== p.quantity ? 'var(--accent)' : 'var(--text)',
+                                borderRadius: 6,
+                                color: count !== p.quantity ? 'var(--accent)' : 'var(--text)',
                                 fontFamily: 'var(--font-mono)', fontSize: 13,
                                 textAlign: 'center', outline: 'none',
+                                fontWeight: count !== p.quantity ? 700 : 400,
                               }}
                             />
                           </td>
