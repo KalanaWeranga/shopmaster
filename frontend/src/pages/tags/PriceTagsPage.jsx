@@ -5,18 +5,17 @@ import { productsAPI } from '../../api';
 import { printContent } from '../../utils/print';
 
 const fmt = (n) => `LKR ${parseFloat(n || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
-const SHOP = process.env.REACT_APP_SHOP_NAME || 'Lumoz';
+const SHOP = process.env.REACT_APP_SHOP_NAME || 'ShopMaster Store';
 
-// Generate barcode SVG string for a product code
 function generateBarcodeSVG(code) {
   try {
     const canvas = document.createElement('canvas');
     JsBarcode(canvas, code, {
       format: 'CODE128',
-      width: 1.5,
-      height: 40,
+      width: 1.2,
+      height: 26,
       displayValue: false,
-      margin: 2,
+      margin: 1,
       background: '#ffffff',
     });
     return canvas.toDataURL('image/png');
@@ -25,62 +24,51 @@ function generateBarcodeSVG(code) {
   }
 }
 
-// Single price tag card shown in the preview UI
 function PriceTagPreview({ product }) {
   const barcodeRef = useRef(null);
-
   useEffect(() => {
     if (barcodeRef.current && product.code) {
       try {
         JsBarcode(barcodeRef.current, product.code, {
-          format: 'CODE128',
-          width: 1.4,
-          height: 36,
-          displayValue: false,
-          margin: 2,
-          background: 'transparent',
+          format: 'CODE128', width: 1.2, height: 20,
+          displayValue: false, margin: 1, background: 'transparent',
         });
       } catch {}
     }
   }, [product.code]);
 
   return (
-    <div className="price-tag-card" style={{ background: 'white', color: '#111' }}>
-      <div className="price-tag-code">{SHOP}</div>
-      <div style={{ borderTop: '1px solid #ccc', margin: '4px 0' }} />
+    <div className="price-tag-card" style={{
+      background: 'white', color: '#111', width: 152, height: 76,
+      padding: 6, display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+    }}>
+      <div style={{ fontSize: 6, color: '#666', textTransform: 'uppercase', letterSpacing: 0.3 }}>{SHOP}</div>
+      <div style={{ borderTop: '0.5px solid #ccc', margin: '2px 0', width: '100%' }} />
       <div className="price-tag-name">{product.name}</div>
       <div className="price-tag-meta">
         {product.size && <span>Size: {product.size}</span>}
-        {product.size && product.colors?.[0] && <span> · </span>}
-        {product.colors?.[0] && <span>Color: {product.colors[0]}</span>}
       </div>
       <div className="price-tag-price">
         <span className="price-tag-currency">LKR </span>
         {parseFloat(product.selling_price).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
       </div>
-      <svg ref={barcodeRef} style={{ display: 'block', margin: '6px auto 0', maxWidth: '100%' }} />
-      <div className="price-tag-code" style={{ marginTop: 2 }}>{product.code}</div>
+      <svg ref={barcodeRef} style={{ display: 'block', margin: '2px auto 0', maxWidth: '100%' }} />
+      <div className="price-tag-code" style={{ marginTop: 1 }}>{product.code}</div>
     </div>
   );
 }
 
-// Build print HTML for all selected tags using canvas-generated barcode images
-function buildTagsHTML(products, copies, showSupplierPrice) {
-  const tags = products.flatMap(p => Array(copies).fill(p));
-
-  const tagCards = tags.map(p => {
+function buildTagsHTML(tagList, showSupplierPrice) {
+  const tagCards = tagList.map(p => {
     const barcodeDataUrl = generateBarcodeSVG(p.code);
     const barcodeImg = barcodeDataUrl
-      ? `<img src="${barcodeDataUrl}" class="price-tag-barcode" style="max-width:170px;height:44px;" alt="barcode" />`
+      ? `<img src="${barcodeDataUrl}" class="price-tag-barcode" style="max-width:18mm;height:6mm;" alt="barcode" />`
       : '';
-
     const metaParts = [];
     if (p.size) metaParts.push(`Size: ${p.size}`);
-    if (p.colors?.[0]) metaParts.push(`Color: ${p.colors[0]}`);
-
     const costLine = showSupplierPrice
       ? `<div class="price-tag-cost">Cost: ${fmt(p.supplier_price)}</div>` : '';
-
     return `
       <div class="price-tag-card">
         <div class="price-tag-shop">${SHOP}</div>
@@ -96,64 +84,99 @@ function buildTagsHTML(products, copies, showSupplierPrice) {
       </div>
     `;
   }).join('');
-
   return `<div class="tags-page">${tagCards}</div>`;
 }
 
 export default function PriceTagsPage() {
-  const [selected, setSelected] = useState([]);
+  // tagCounts: { [product.id]: count }
+  const [tagCounts, setTagCounts] = useState({});
+  const [selected, setSelected] = useState({}); // { [id]: true/false }
   const [search, setSearch] = useState('');
   const [showSupplierPrice, setShowSupplierPrice] = useState(false);
-  const [copiesPerTag, setCopiesPerTag] = useState(1);
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products', search],
     queryFn: () => productsAPI.getAll({ search }).then(r => r.data),
   });
 
+  // When products load, set default tag count = stock quantity for each
+  useEffect(() => {
+    if (products.length) {
+      setTagCounts(prev => {
+        const next = { ...prev };
+        products.forEach(p => {
+          if (next[p.id] === undefined) {
+            next[p.id] = p.quantity > 0 ? p.quantity : 0;
+          }
+        });
+        return next;
+      });
+    }
+  }, [products]);
+
+  const toggleSelect = (id) => {
+    setSelected(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const selectAll = () => {
+    const next = {};
+    products.forEach(p => { next[p.id] = true; });
+    setSelected(next);
+  };
+
+  const clearAll = () => setSelected({});
+
+  const setCount = (id, val) => {
+    const n = Math.max(0, parseInt(val) || 0);
+    setTagCounts(prev => ({ ...prev, [id]: n }));
+  };
+
+  // Reset all counts to stock quantity
+  const resetToStock = () => {
+    const next = {};
+    products.forEach(p => { next[p.id] = p.quantity > 0 ? p.quantity : 0; });
+    setTagCounts(next);
+  };
+
+  const selectedProducts = products.filter(p => selected[p.id]);
+
+  // Build flat list of tags to print: repeat each product by its count
+  const tagList = selectedProducts.flatMap(p =>
+    Array(tagCounts[p.id] || 0).fill(p)
+  );
+
+  const totalTags = tagList.length;
+
   const handlePrint = () => {
-    if (!selected.length) { return; }
-    const html = buildTagsHTML(selected, copiesPerTag, showSupplierPrice);
-    printContent(html, 'Price Tags');
+    if (!tagList.length) return;
+    printContent(buildTagsHTML(tagList, showSupplierPrice), 'Price Tags');
   };
 
-  const toggleSelect = (product) => {
-    setSelected(prev => {
-      const exists = prev.find(p => p.id === product.id);
-      return exists ? prev.filter(p => p.id !== product.id) : [...prev, product];
-    });
-  };
-
-  const selectAll = () => setSelected([...products]);
-  const clearAll = () => setSelected([]);
-
-  const totalTags = selected.length * copiesPerTag;
+  const allSelected = products.length > 0 && products.every(p => selected[p.id]);
+  const someSelected = products.some(p => selected[p.id]);
 
   return (
     <div className="page">
       <div className="page-header">
         <div className="page-header-left">
           <h2>Price Tags</h2>
-          <p>Generate and print product price tags with CODE128 barcodes</p>
+          <p>Tag counts default to stock quantity — change manually per product</p>
         </div>
-        <button
-          className="btn btn-primary"
-          onClick={handlePrint}
-          disabled={!selected.length}
-        >
+        <button className="btn btn-primary" onClick={handlePrint} disabled={!totalTags}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="6 9 6 2 18 2 18 9"/>
             <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
             <rect x="6" y="14" width="12" height="8"/>
           </svg>
-          Print {totalTags > 0 ? `${totalTags} Tag${totalTags > 1 ? 's' : ''}` : 'Tags'}
+          Print {totalTags > 0 ? `${totalTags} Tag${totalTags !== 1 ? 's' : ''}` : 'Tags'}
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16, alignItems: 'start' }}>
-        {/* Product selection table */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 16, alignItems: 'start' }}>
+
+        {/* Left — product table */}
         <div>
-          {/* Search + actions */}
+          {/* Toolbar */}
           <div className="card" style={{ marginBottom: 14 }}>
             <div className="card-body" style={{ paddingTop: 14, paddingBottom: 14 }}>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -161,26 +184,18 @@ export default function PriceTagsPage() {
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                   </svg>
-                  <input
-                    className="form-input"
-                    placeholder="Search products..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                  />
+                  <input className="form-input" placeholder="Search products..." value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
-                <button className="btn btn-ghost btn-sm" onClick={selectAll} disabled={!products.length}>
-                  Select All
+                <button className="btn btn-ghost btn-sm" onClick={selectAll} disabled={!products.length}>Select All</button>
+                <button className="btn btn-ghost btn-sm" onClick={clearAll} disabled={!someSelected}>Clear</button>
+                <button className="btn btn-ghost btn-sm" onClick={resetToStock} disabled={!products.length} title="Reset all counts to stock quantity">
+                  ↺ Reset to Stock
                 </button>
-                <button className="btn btn-ghost btn-sm" onClick={clearAll} disabled={!selected.length}>
-                  Clear
-                </button>
-                <span style={{ fontSize: 12, color: 'var(--text3)', whiteSpace: 'nowrap' }}>
-                  {selected.length} selected
-                </span>
               </div>
             </div>
           </div>
 
+          {/* Table */}
           <div className="card">
             <div className="table-wrap">
               {isLoading ? (
@@ -192,46 +207,57 @@ export default function PriceTagsPage() {
                   <thead>
                     <tr>
                       <th>
-                        <input
-                          type="checkbox"
+                        <input type="checkbox"
+                          checked={allSelected}
+                          ref={el => { if (el) el.indeterminate = someSelected && !allSelected; }}
                           onChange={e => e.target.checked ? selectAll() : clearAll()}
-                          checked={selected.length === products.length && products.length > 0}
-                          ref={el => { if (el) el.indeterminate = selected.length > 0 && selected.length < products.length; }}
                         />
                       </th>
                       <th>Code</th>
                       <th>Name</th>
                       <th>Size</th>
-                      <th>Selling Price</th>
+                      <th>Price</th>
                       <th>Stock</th>
+                      <th>Tag Count</th>
                     </tr>
                   </thead>
                   <tbody>
                     {products.map(p => {
-                      const isSelected = !!selected.find(s => s.id === p.id);
+                      const isSelected = !!selected[p.id];
+                      const count = tagCounts[p.id] ?? p.quantity;
                       return (
-                        <tr
-                          key={p.id}
-                          onClick={() => toggleSelect(p)}
-                          style={{ cursor: 'pointer', background: isSelected ? 'var(--accent-dim)' : '' }}
-                        >
-                          <td onClick={e => e.stopPropagation()}>
-                            <input type="checkbox" checked={isSelected} onChange={() => toggleSelect(p)} />
+                        <tr key={p.id} style={{ background: isSelected ? 'var(--accent-dim)' : '' }}>
+                          <td>
+                            <input type="checkbox" checked={isSelected} onChange={() => toggleSelect(p.id)} />
                           </td>
                           <td>
-                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--accent)' }}>
-                              {p.code}
-                            </span>
+                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--accent)' }}>{p.code}</span>
                           </td>
                           <td style={{ fontWeight: 500 }}>{p.name}</td>
                           <td style={{ color: 'var(--text2)' }}>{p.size || '—'}</td>
-                          <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--green)' }}>
-                            {fmt(p.selling_price)}
-                          </td>
+                          <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--green)' }}>{fmt(p.selling_price)}</td>
                           <td>
                             <span className={`badge ${p.quantity === 0 ? 'badge-red' : p.quantity < 5 ? 'badge-yellow' : 'badge-green'}`}>
                               {p.quantity}
                             </span>
+                          </td>
+                          <td>
+                            <input
+                              type="number"
+                              min="0"
+                              max="999"
+                              value={count}
+                              onChange={e => setCount(p.id, e.target.value)}
+                              onClick={e => e.stopPropagation()}
+                              style={{
+                                width: 64, padding: '4px 8px',
+                                background: 'var(--surface2)',
+                                border: `1px solid ${count !== p.quantity ? 'var(--accent)' : 'var(--border)'}`,
+                                borderRadius: 6, color: count !== p.quantity ? 'var(--accent)' : 'var(--text)',
+                                fontFamily: 'var(--font-mono)', fontSize: 13,
+                                textAlign: 'center', outline: 'none',
+                              }}
+                            />
                           </td>
                         </tr>
                       );
@@ -243,41 +269,35 @@ export default function PriceTagsPage() {
           </div>
         </div>
 
-        {/* Settings + Preview */}
+        {/* Right — settings + preview */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* Print settings */}
+
+          {/* Settings */}
           <div className="card">
             <div className="card-header"><div className="card-title">Print Settings</div></div>
             <div className="card-body">
-              <div className="form-grid" style={{ gap: 12 }}>
-                <div className="form-group">
-                  <label className="form-label">Copies Per Tag</label>
-                  <input
-                    className="form-input"
-                    type="number"
-                    min="1"
-                    max="20"
-                    value={copiesPerTag}
-                    onChange={e => setCopiesPerTag(Math.max(1, parseInt(e.target.value) || 1))}
-                  />
-                </div>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: 'var(--text2)' }}>
-                  <input
-                    type="checkbox"
-                    checked={showSupplierPrice}
-                    onChange={e => setShowSupplierPrice(e.target.checked)}
-                  />
-                  Show supplier / cost price
-                </label>
-              </div>
-              {selected.length > 0 && (
-                <div style={{ marginTop: 14, padding: '10px 12px', background: 'var(--accent-dim)', borderRadius: 8, fontSize: 13 }}>
-                  <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{totalTags}</span>
-                  <span style={{ color: 'var(--text2)' }}> tag{totalTags > 1 ? 's' : ''} will be printed</span>
-                  <br />
-                  <span style={{ color: 'var(--text3)', fontSize: 11 }}>
-                    {selected.length} product{selected.length > 1 ? 's' : ''} × {copiesPerTag} cop{copiesPerTag > 1 ? 'ies' : 'y'}
-                  </span>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: 'var(--text2)' }}>
+                <input type="checkbox" checked={showSupplierPrice} onChange={e => setShowSupplierPrice(e.target.checked)} />
+                Show supplier / cost price
+              </label>
+
+              {someSelected && (
+                <div style={{ marginTop: 14, padding: '12px', background: 'var(--accent-dim)', borderRadius: 8 }}>
+                  <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 6 }}>
+                    Selected products:
+                  </div>
+                  {selectedProducts.map(p => (
+                    <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, padding: '3px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <span style={{ color: 'var(--text)', fontWeight: 500, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: 8 }}>{p.name}</span>
+                      <span style={{ color: 'var(--accent)', fontFamily: 'var(--font-mono)', fontWeight: 700, flexShrink: 0 }}>
+                        × {tagCounts[p.id] ?? p.quantity}
+                      </span>
+                    </div>
+                  ))}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.1)', fontWeight: 700 }}>
+                    <span style={{ color: 'var(--text2)', fontSize: 13 }}>Total tags</span>
+                    <span style={{ color: 'var(--accent)', fontFamily: 'var(--font-mono)', fontSize: 15 }}>{totalTags}</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -287,33 +307,33 @@ export default function PriceTagsPage() {
           <div className="card">
             <div className="card-header">
               <div className="card-title">Preview</div>
-              <span style={{ fontSize: 12, color: 'var(--text3)' }}>
-                {selected.length} product{selected.length !== 1 ? 's' : ''}
-              </span>
+              <span style={{ fontSize: 12, color: 'var(--text3)' }}>{selectedProducts.length} products</span>
             </div>
-            <div className="card-body" style={{ background: '#d0d0d0', borderRadius: '0 0 10px 10px', padding: 12, minHeight: 120 }}>
-              {selected.length === 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, gap: 8 }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="1.5" style={{ width: 32, height: 32 }}>
-                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
-                    <line x1="7" y1="7" x2="7.01" y2="7"/>
-                  </svg>
+            <div className="card-body" style={{ background: '#d0d0d0', borderRadius: '0 0 10px 10px', padding: 12, minHeight: 100 }}>
+              {!selectedProducts.length ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, gap: 8 }}>
                   <p style={{ color: '#aaa', fontSize: 13 }}>Select products to preview</p>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
-                  {selected.slice(0, 4).map(p => (
-                    <PriceTagPreview key={p.id} product={p} />
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
+                  {selectedProducts.slice(0, 6).map(p => (
+                    <div key={p.id} style={{ position: 'relative' }}>
+                      <PriceTagPreview product={p} />
+                      <div style={{
+                        position: 'absolute', top: -6, right: -6,
+                        background: 'var(--accent)', color: '#0c0c0e',
+                        borderRadius: '50%', width: 18, height: 18,
+                        fontSize: 10, fontWeight: 800,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontFamily: 'var(--font-mono)',
+                      }}>
+                        {tagCounts[p.id] ?? p.quantity}
+                      </div>
+                    </div>
                   ))}
-                  {selected.length > 4 && (
-                    <div style={{
-                      width: 200, height: 100,
-                      background: 'white', border: '2px dashed #ccc',
-                      borderRadius: 8, display: 'flex',
-                      alignItems: 'center', justifyContent: 'center',
-                      color: '#aaa', fontSize: 14,
-                    }}>
-                      +{selected.length - 4} more
+                  {selectedProducts.length > 6 && (
+                    <div style={{ width: 152, height: 76, background: 'white', border: '2px dashed #ccc', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa', fontSize: 12 }}>
+                      +{selectedProducts.length - 6}
                     </div>
                   )}
                 </div>
@@ -321,9 +341,8 @@ export default function PriceTagsPage() {
             </div>
           </div>
 
-          {/* How it works note */}
           <div style={{ padding: '12px 14px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12, color: 'var(--text3)' }}>
-            <strong style={{ color: 'var(--text2)' }}>How to print:</strong> Select products above, set copies, then click <strong style={{ color: 'var(--accent)' }}>Print Tags</strong>. A print dialog will open. Choose your printer and paper size.
+            <strong style={{ color: 'var(--text2)' }}>Tip:</strong> Tag counts default to stock quantity. Edit the <strong style={{ color: 'var(--accent)' }}>Tag Count</strong> column to change. Highlighted in yellow when changed from stock.
           </div>
         </div>
       </div>

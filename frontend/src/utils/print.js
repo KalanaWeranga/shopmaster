@@ -70,62 +70,77 @@ export function printContent(htmlContent, title = 'Print') {
         .tags-page {
           display: flex;
           flex-wrap: wrap;
-          gap: 10px;
-          padding: 8px;
+          gap: 2mm;
+          padding: 2mm;
         }
         .price-tag-card {
-          border: 2px solid #222;
-          border-radius: 8px;
-          padding: 10px 12px;
+          border: 0.5px solid #333;
+          border-radius: 1mm;
+          padding: 1.5mm 2mm;
           text-align: center;
-          width: 200px;
+          width: 40mm;
+          height: 20mm;
           page-break-inside: avoid;
           break-inside: avoid;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          box-sizing: border-box;
         }
         .price-tag-shop {
-          font-size: 9px;
+          font-size: 5px;
           color: #666;
-          letter-spacing: 1px;
+          letter-spacing: 0.5px;
           text-transform: uppercase;
+          line-height: 1.2;
         }
         .price-tag-divider {
           border: none;
-          border-top: 1px solid #ccc;
-          margin: 4px 0;
+          border-top: 0.3px solid #ccc;
+          margin: 0.8mm 0;
+          width: 100%;
         }
         .price-tag-name {
-          font-size: 13px;
+          font-size: 6.5px;
           font-weight: 800;
-          margin: 3px 0;
+          margin: 0.3mm 0;
           word-break: break-word;
+          line-height: 1.2;
         }
         .price-tag-meta {
-          font-size: 10px;
+          font-size: 5px;
           color: #444;
-          margin-bottom: 4px;
+          margin-bottom: 0.3mm;
+          line-height: 1.2;
         }
         .price-tag-cost {
-          font-size: 9px;
+          font-size: 4.5px;
           color: #888;
-          margin-bottom: 2px;
+          margin-bottom: 0.2mm;
         }
         .price-tag-price {
-          font-size: 22px;
+          font-size: 9px;
           font-weight: 900;
+          line-height: 1.2;
         }
         .price-tag-currency {
-          font-size: 13px;
+          font-size: 6px;
           font-weight: 600;
         }
         .price-tag-barcode {
-          margin: 6px auto 2px;
+          margin: 0.8mm auto 0.2mm;
           display: block;
+          max-width: 36mm;
+          height: 7mm;
         }
         .price-tag-code {
-          font-size: 9px;
+          font-size: 4px;
           color: #666;
-          letter-spacing: 0.5px;
-          margin-top: 2px;
+          letter-spacing: 0.3px;
+          margin-top: 0.2mm;
+          line-height: 1.2;
         }
 
         @media print {
