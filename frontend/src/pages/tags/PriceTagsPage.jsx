@@ -12,8 +12,8 @@ function generateBarcodeSVG(code) {
     const canvas = document.createElement('canvas');
     JsBarcode(canvas, code, {
       format: 'CODE128',
-      width: 1.2,
-      height: 26,
+      width: 3.2,
+      height: 30,
       displayValue: false,
       margin: 1,
       background: '#ffffff',
@@ -40,11 +40,11 @@ function PriceTagPreview({ product }) {
   return (
     <div className="price-tag-card" style={{
       background: 'white', color: '#111', width: 152, height: 76,
-      padding: 6, display: 'flex', flexDirection: 'column',
+      padding: 4, display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
     }}>
       <div style={{ fontSize: 6, color: '#000000', textTransform: 'uppercase', letterSpacing: 0.3 }}>{SHOP}</div>
-      <div style={{ borderTop: '0.5px solid #ccc', margin: '2px 0', width: '100%' }} />
+      <div style={{ borderTop: '0px solid #ccc', width: '100%' }} />
       <div className="price-tag-name">{product.name}</div>
       <div className="price-tag-meta">
         {product.size && <span>Size: {product.size}</span>}
@@ -53,7 +53,7 @@ function PriceTagPreview({ product }) {
         <span className="price-tag-currency">LKR </span>
         {parseFloat(product.selling_price).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
       </div>
-      <svg ref={barcodeRef} style={{ display: 'block', margin: '2px auto 0', maxWidth: '100%' }} />
+      <svg ref={barcodeRef} style={{ display: 'block', margin: '0px auto 0', maxWidth: '100%' }} />
       <div className="price-tag-code" style={{ marginTop: 1 }}>{product.code}</div>
     </div>
   );

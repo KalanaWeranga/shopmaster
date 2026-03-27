@@ -76,7 +76,7 @@ export function printContent(htmlContent, title = 'Print') {
         .price-tag-card {
           border: 2px solid #222;
           border-radius: 8px;
-          padding: 10px 12px;
+          padding: 5px 6px;
           text-align: center;
           width: 50mm;
           height: 20mm
@@ -94,20 +94,19 @@ export function printContent(htmlContent, title = 'Print') {
           text-transform: uppercase;
         }
         .price-tag-divider {
-          border: none;
-          border-top: 1px solid #ccc;
+          border-top: 1px solid #00000;
           margin: 4px 0;
         }
         .price-tag-name {
           font-size: 13px;
           font-weight: 800;
-          margin: 3px 0;
+          margin: 1px 0;
           word-break: break-word;
         }
         .price-tag-meta {
           font-size: 10px;
           color: #000000;
-          margin-bottom: 4px;
+          margin-bottom: 2px;
         }
         .price-tag-cost {
           font-size: 9px;
@@ -123,7 +122,7 @@ export function printContent(htmlContent, title = 'Print') {
           font-weight: 600;
         }
         .price-tag-barcode {
-          margin: 6px auto 2px;
+          margin: 1px auto 2px;
           display: block;
         }
         .price-tag-code {
