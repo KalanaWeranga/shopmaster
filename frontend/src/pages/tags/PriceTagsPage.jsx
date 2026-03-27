@@ -43,7 +43,7 @@ function PriceTagPreview({ product }) {
       padding: 6, display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
     }}>
-      <div style={{ fontSize: 6, color: '#666', textTransform: 'uppercase', letterSpacing: 0.3 }}>{SHOP}</div>
+      <div style={{ fontSize: 6, color: '#000000', textTransform: 'uppercase', letterSpacing: 0.3 }}>{SHOP}</div>
       <div style={{ borderTop: '0.5px solid #ccc', margin: '2px 0', width: '100%' }} />
       <div className="price-tag-name">{product.name}</div>
       <div className="price-tag-meta">
