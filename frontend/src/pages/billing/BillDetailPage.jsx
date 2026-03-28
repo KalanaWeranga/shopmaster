@@ -10,13 +10,16 @@ import { printContent } from '../../utils/print';
 const fmt = (n) => `LKR ${parseFloat(n || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
 const SHOP = process.env.REACT_APP_SHOP_NAME || 'Lumoz';
 
+// Logo URL from public folder — works in both dev and production build
+const LOGO_URL = `${window.location.origin}/logo.jpeg`;
+
 function buildReceiptHTML(bill) {
   const itemRows = (bill.items || []).map(item => `
     <div style="margin-bottom:5px;">
-      <div>${item.product_name}${item.size ? ` [${item.size}]` : ''}${item.color ? ` (${item.color})` : ''}</div>
+      <div style="font-weight:700;">${item.product_name}${item.size ? ` [${item.size}]` : ''}${item.color ? ` (${item.color})` : ''}</div>
       <div class="receipt-row">
-        <span style="color:#555">${item.quantity} &times; ${fmt(item.unit_price)}</span>
-        <span>${fmt(item.total_price)}</span>
+        <span style="color:#000; font-weight:700;">${item.quantity} &times; ${fmt(item.unit_price)}</span>
+        <span style="font-weight:700;">${fmt(item.total_price)}</span>
       </div>
     </div>
   `).join('');
@@ -26,7 +29,7 @@ function buildReceiptHTML(bill) {
   const taxRow = parseFloat(bill.tax) > 0
     ? `<div class="receipt-row"><span>Tax</span><span>+ ${fmt(bill.tax)}</span></div>` : '';
   const notesRow = bill.notes
-    ? `<div style="margin-top:8px;color:#555;font-size:10px;">Note: ${bill.notes}</div>` : '';
+    ? `<div style="margin-top:8px; color:#000; font-size:11px; font-weight:700;">Note: ${bill.notes}</div>` : '';
   const customerRow = bill.customer_name
     ? `<div>Customer: ${bill.customer_name}${bill.customer_phone ? ` (${bill.customer_phone})` : ''}</div>` : '';
 
@@ -48,14 +51,16 @@ function buildReceiptHTML(bill) {
       ${taxRow}
       <hr class="receipt-divider" />
       <div class="receipt-total-row"><span>TOTAL</span><span>${fmt(bill.total)}</span></div>
-      <div class="receipt-row" style="margin-top:4px;color:#555;">
+      <div class="receipt-row" style="margin-top:4px;">
         <span>Payment</span>
         <span style="text-transform:capitalize">${bill.payment_method}</span>
       </div>
       ${notesRow}
       <hr class="receipt-divider" />
-      <div class="receipt-footer">Thank you for shopping!</div>
-      <div class="receipt-footer">${SHOP}</div>
+      <div class="receipt-sub">No.49, Elliot Road, Galle</div>
+      <div class="receipt-sub">+94 70 3927498</div>
+      <div class="receipt-exchange">* Exchange within 7 days with receipt</div>
+      <div class="receipt-footer">*** Thank you! Come Again! ***</div>
     </div>
   `;
 }
