@@ -104,65 +104,78 @@ export function printContent(htmlContent, title = 'Print') {
           display: flex;
           flex-wrap: wrap;
           gap: 4px;
-          padding: 0;
+          padding: 2px;
         }
         .price-tag-card {
           border: 2px solid #222;
           border-radius: 8px;
-          padding: 5px 6px;
+          padding: 4px 6px;
           text-align: center;
           width: 50mm;
-          height: 20mm;
           page-break-inside: avoid;
           break-inside: avoid;
           color: #000 !important;
-          font-weight: 700 !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 1px;
         }
         .price-tag-shop {
-          font-size: 9px;
-          color: #000000;
+          font-size: 8px;
+          color: #000;
           letter-spacing: 1px;
           text-transform: uppercase;
+          font-weight: 700;
         }
         .price-tag-divider {
+          border: none;
           border-top: 1px solid #000;
-          margin: 4px 0;
+          width: 100%;
+          margin: 2px 0;
         }
         .price-tag-name {
-          font-size: 13px;
+          font-size: 12px;
           font-weight: 800;
-          margin: 1px 0;
           word-break: break-word;
+          color: #000;
         }
         .price-tag-meta {
-          font-size: 10px;
-          color: #000000;
-          margin-bottom: 2px;
+          font-size: 9px;
+          color: #000;
         }
         .price-tag-cost {
           font-size: 9px;
           color: #000;
-          margin-bottom: 2px;
         }
         .price-tag-price {
-          font-size: 22px;
+          font-size: 20px;
           font-weight: 900;
+          color: #000;
+          line-height: 1.1;
         }
         .price-tag-currency {
-          font-size: 13px;
-          font-weight: 600;
+          font-size: 11px;
+          font-weight: 700;
         }
         .price-tag-barcode {
-          margin: 1px auto 2px;
           display: block;
+          width: 140px;
+          height: 48px;
+          margin: 2px auto;
+          object-fit: contain;
+          image-rendering: pixelated;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
         .price-tag-code {
-          font-size: 9px;
-          color: #000000;
-          letter-spacing: 0.5px;
-          margin-top: 2px;
+          font-size: 8px;
+          color: #000;
+          letter-spacing: 1px;
+          font-weight: 700;
+          font-family: 'Courier New', Courier, monospace;
         }
 
         @media print {
@@ -177,6 +190,13 @@ export function printContent(htmlContent, title = 'Print') {
             size: 80mm auto;
             margin: 0;
           }
+          .price-tag-barcode {
+            display: block !important;
+            width: 140px !important;
+            height: 48px !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
         }
       </style>
     </head>
@@ -188,7 +208,6 @@ export function printContent(htmlContent, title = 'Print') {
 
   win.document.close();
 
-  // Resize window to content height then print
   win.onload = () => {
     setTimeout(() => {
       const body = win.document.body;
@@ -197,7 +216,7 @@ export function printContent(htmlContent, title = 'Print') {
       win.focus();
       win.print();
       win.close();
-    }, 500);
+    }, 800);
   };
 
   // Fallback if onload doesn't fire
@@ -207,5 +226,5 @@ export function printContent(htmlContent, title = 'Print') {
       win.print();
       win.close();
     } catch (_) {}
-  }, 1500);
+  }, 2000);
 }
