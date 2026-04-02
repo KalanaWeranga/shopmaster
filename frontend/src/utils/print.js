@@ -1,10 +1,17 @@
 /**
  * Opens a new browser window with the given HTML content + styles and triggers print.
  * @param {string} htmlContent  - The inner HTML string to print
- * @param {string} title        - Window/document title
+ * @param {string} title        - Window/document title ('Price Tags' triggers A4 layout)
  */
 export function printContent(htmlContent, title = 'Print') {
-  const win = window.open('', '_blank', 'width=900,height=700');
+  const isPriceTags = title === 'Price Tags';
+
+  const win = window.open(
+    '',
+    '_blank',
+    isPriceTags ? 'width=900,height=700' : 'width=302,height=100'
+  );
+
   if (!win) {
     alert('Pop-up blocked! Please allow pop-ups for this site and try again.');
     return;
@@ -23,7 +30,9 @@ export function printContent(htmlContent, title = 'Print') {
           font-family: 'Courier New', Courier, monospace;
           background: white;
           color: #000;
-          width: 210mm;
+          ${isPriceTags ? 'width: 210mm;' : 'width: 80mm; overflow: hidden;'}
+          height: auto !important;
+          font-weight: 600;
         }
 
         /* ── RECEIPT ── */
@@ -97,9 +106,9 @@ export function printContent(htmlContent, title = 'Print') {
         }
 
         /* ── PRICE TAGS — A4 grid layout ── */
-        /* A4 = 210mm wide, 297mm tall. 8mm margins each side = 194mm usable.
-           4 columns × 47mm = 188mm, gap 2mm × 3 = 6mm → total 194mm ✓
-           Tags are ~38mm tall so ~7 rows per page fits comfortably            */
+        /* A4 = 210mm wide. 8mm padding each side = 194mm usable.
+           4 cols × 47mm + 3 gaps × 2mm = 194mm ✓
+           ~7 rows per page = ~28 tags per A4 sheet                */
         .tags-page {
           width: 210mm;
           padding: 8mm;
@@ -108,7 +117,6 @@ export function printContent(htmlContent, title = 'Print') {
           gap: 2mm;
           background: white;
         }
-
         .price-tag-card {
           border: 1.5px solid #222;
           border-radius: 4px;
@@ -185,17 +193,18 @@ export function printContent(htmlContent, title = 'Print') {
 
         @media print {
           html, body {
-            width: 210mm !important;
             margin: 0 !important;
             padding: 0 !important;
+            ${isPriceTags
+              ? 'width: 210mm !important;'
+              : 'width: 80mm !important; height: auto !important; overflow: hidden !important;'
+            }
           }
           @page {
-            size: A4 portrait;
-            margin: 0;
-          }
-          .tags-page {
-            padding: 8mm;
-            width: 210mm;
+            ${isPriceTags
+              ? 'size: A4 portrait; margin: 0;'
+              : 'size: 80mm auto; margin: 0;'
+            }
           }
           .price-tag-barcode {
             display: block !important;
@@ -217,6 +226,12 @@ export function printContent(htmlContent, title = 'Print') {
 
   win.onload = () => {
     setTimeout(() => {
+      if (!isPriceTags) {
+        // For receipts: resize window to content height first
+        const body = win.document.body;
+        const height = body.scrollHeight;
+        win.resizeTo(302, height + 50);
+      }
       win.focus();
       win.print();
       win.close();
