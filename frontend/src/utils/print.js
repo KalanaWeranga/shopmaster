@@ -4,7 +4,7 @@
  * @param {string} title        - Window/document title
  */
 export function printContent(htmlContent, title = 'Print') {
-  const win = window.open('', '_blank', 'width=302,height=100');
+  const win = window.open('', '_blank', 'width=900,height=700');
   if (!win) {
     alert('Pop-up blocked! Please allow pop-ups for this site and try again.');
     return;
@@ -23,10 +23,7 @@ export function printContent(htmlContent, title = 'Print') {
           font-family: 'Courier New', Courier, monospace;
           background: white;
           color: #000;
-          width: 80mm;
-          height: auto !important;
-          overflow: hidden;
-          font-weight: 600;
+          width: 210mm;
         }
 
         /* ── RECEIPT ── */
@@ -99,19 +96,26 @@ export function printContent(htmlContent, title = 'Print') {
           padding: 3px 0;
         }
 
-        /* ── PRICE TAGS ── */
+        /* ── PRICE TAGS — A4 grid layout ── */
+        /* A4 = 210mm wide, 297mm tall. 8mm margins each side = 194mm usable.
+           4 columns × 47mm = 188mm, gap 2mm × 3 = 6mm → total 194mm ✓
+           Tags are ~38mm tall so ~7 rows per page fits comfortably            */
         .tags-page {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 4px;
-          padding: 2px;
+          width: 210mm;
+          padding: 8mm;
+          display: grid;
+          grid-template-columns: repeat(4, 47mm);
+          gap: 2mm;
+          background: white;
         }
+
         .price-tag-card {
-          border: 2px solid #222;
-          border-radius: 8px;
-          padding: 4px 6px;
+          border: 1.5px solid #222;
+          border-radius: 4px;
+          padding: 3px 4px;
           text-align: center;
-          width: 50mm;
+          width: 47mm;
+          min-height: 32mm;
           page-break-inside: avoid;
           break-inside: avoid;
           color: #000 !important;
@@ -124,76 +128,79 @@ export function printContent(htmlContent, title = 'Print') {
           gap: 1px;
         }
         .price-tag-shop {
-          font-size: 8px;
+          font-size: 7px;
           color: #000;
-          letter-spacing: 1px;
+          letter-spacing: 0.8px;
           text-transform: uppercase;
           font-weight: 700;
         }
         .price-tag-divider {
           border: none;
-          border-top: 1px solid #000;
+          border-top: 0.5px solid #000;
           width: 100%;
-          margin: 2px 0;
+          margin: 1px 0;
         }
         .price-tag-name {
-          font-size: 12px;
+          font-size: 10px;
           font-weight: 800;
           word-break: break-word;
           color: #000;
+          line-height: 1.2;
         }
         .price-tag-meta {
-          font-size: 9px;
+          font-size: 8px;
           color: #000;
         }
         .price-tag-cost {
-          font-size: 9px;
+          font-size: 7px;
           color: #000;
         }
         .price-tag-price {
-          font-size: 20px;
+          font-size: 16px;
           font-weight: 900;
           color: #000;
           line-height: 1.1;
         }
         .price-tag-currency {
-          font-size: 11px;
+          font-size: 9px;
           font-weight: 700;
         }
         .price-tag-barcode {
           display: block;
-          width: 140px;
-          height: 48px;
-          margin: 2px auto;
-          object-fit: contain;
+          width: 42mm;
+          height: 10mm;
+          margin: 1px auto;
+          object-fit: fill;
           image-rendering: pixelated;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
         .price-tag-code {
-          font-size: 8px;
+          font-size: 7px;
           color: #000;
-          letter-spacing: 1px;
+          letter-spacing: 0.8px;
           font-weight: 700;
           font-family: 'Courier New', Courier, monospace;
         }
 
         @media print {
           html, body {
-            width: 80mm !important;
-            height: auto !important;
+            width: 210mm !important;
             margin: 0 !important;
             padding: 0 !important;
-            overflow: hidden !important;
           }
           @page {
-            size: 80mm auto;
+            size: A4 portrait;
             margin: 0;
+          }
+          .tags-page {
+            padding: 8mm;
+            width: 210mm;
           }
           .price-tag-barcode {
             display: block !important;
-            width: 140px !important;
-            height: 48px !important;
+            width: 42mm !important;
+            height: 10mm !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
@@ -210,9 +217,6 @@ export function printContent(htmlContent, title = 'Print') {
 
   win.onload = () => {
     setTimeout(() => {
-      const body = win.document.body;
-      const height = body.scrollHeight;
-      win.resizeTo(302, height + 50);
       win.focus();
       win.print();
       win.close();

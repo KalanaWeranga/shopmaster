@@ -9,7 +9,7 @@ const SHOP = process.env.REACT_APP_SHOP_NAME || 'ShopMaster Store';
 
 /**
  * Renders barcode onto a <canvas> and returns a PNG data URL.
- * A canvas data URL is a plain base64 string — works in any window, iframe, or popup.
+ * Canvas data URL is a plain base64 string — works in any popup/window.
  */
 function generateBarcodePNG(code) {
   if (!code) return '';
@@ -39,8 +39,8 @@ function PriceTagPreview({ product }) {
       try {
         JsBarcode(barcodeRef.current, String(product.code), {
           format: 'CODE128',
-          width: 1.2,
-          height: 20,
+          width: 1.0,
+          height: 18,
           displayValue: false,
           margin: 1,
           background: 'transparent',
@@ -51,28 +51,28 @@ function PriceTagPreview({ product }) {
 
   return (
     <div style={{
-      background: 'white', color: '#111', width: 152, height: 100,
+      background: 'white', color: '#111',
+      width: 150, minHeight: 90,
       padding: 4, display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
-      border: '2px solid #222', borderRadius: 6,
+      border: '1.5px solid #222', borderRadius: 4,
     }}>
-      <div style={{ fontSize: 6, color: '#000', textTransform: 'uppercase', letterSpacing: 0.3 }}>{SHOP}</div>
-      <div style={{ borderTop: '1px solid #ccc', width: '100%', margin: '2px 0' }} />
-      <div style={{ fontSize: 10, fontWeight: 800, textAlign: 'center', wordBreak: 'break-word' }}>{product.name}</div>
-      {product.size && <div style={{ fontSize: 8, color: '#000' }}>Size: {product.size}</div>}
-      <div style={{ fontSize: 14, fontWeight: 900 }}>
+      <div style={{ fontSize: 6, color: '#000', textTransform: 'uppercase', letterSpacing: 0.5 }}>{SHOP}</div>
+      <div style={{ borderTop: '0.5px solid #aaa', width: '100%', margin: '1px 0' }} />
+      <div style={{ fontSize: 9, fontWeight: 800, textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.2 }}>{product.name}</div>
+      {product.size && <div style={{ fontSize: 7, color: '#000' }}>Size: {product.size}</div>}
+      <div style={{ fontSize: 13, fontWeight: 900, lineHeight: 1.1 }}>
         <span style={{ fontSize: 8 }}>LKR </span>
         {parseFloat(product.selling_price).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
       </div>
       <svg ref={barcodeRef} style={{ display: 'block', margin: '1px auto 0', maxWidth: '100%' }} />
-      <div style={{ fontSize: 7, color: '#000', letterSpacing: 0.5, marginTop: 1 }}>{product.code}</div>
+      <div style={{ fontSize: 6, color: '#000', letterSpacing: 0.5, marginTop: 1 }}>{product.code}</div>
     </div>
   );
 }
 
 function buildTagsHTML(tagList, showSupplierPrice) {
   const tagCards = tagList.map(p => {
-    // PNG data URL — works perfectly in popup windows, no SVG namespace issues
     const barcodePNG = generateBarcodePNG(p.code);
     const barcodeHTML = barcodePNG
       ? `<img src="${barcodePNG}" class="price-tag-barcode" alt="barcode" />`
@@ -339,8 +339,8 @@ export default function PriceTagsPage() {
                   <p style={{ color: '#aaa', fontSize: 13 }}>Select products to preview</p>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
-                  {selectedProducts.slice(0, 6).map(p => (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'flex-start' }}>
+                  {selectedProducts.slice(0, 8).map(p => (
                     <div key={p.id} style={{ position: 'relative' }}>
                       <PriceTagPreview product={p} />
                       <div style={{
@@ -355,9 +355,9 @@ export default function PriceTagsPage() {
                       </div>
                     </div>
                   ))}
-                  {selectedProducts.length > 6 && (
-                    <div style={{ width: 152, height: 100, background: 'white', border: '2px dashed #ccc', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa', fontSize: 12 }}>
-                      +{selectedProducts.length - 6}
+                  {selectedProducts.length > 8 && (
+                    <div style={{ width: 150, minHeight: 90, background: 'white', border: '2px dashed #ccc', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa', fontSize: 12 }}>
+                      +{selectedProducts.length - 8} more
                     </div>
                   )}
                 </div>
@@ -366,7 +366,7 @@ export default function PriceTagsPage() {
           </div>
 
           <div style={{ padding: '12px 14px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12, color: 'var(--text3)' }}>
-            <strong style={{ color: 'var(--text2)' }}>Tip:</strong> Tag counts default to stock quantity. Edit the <strong style={{ color: 'var(--accent)' }}>Tag Count</strong> column to change. Highlighted when changed from stock.
+            <strong style={{ color: 'var(--text2)' }}>Tip:</strong> Prints <strong style={{ color: 'var(--accent)' }}>4 columns × 7 rows</strong> per A4 page. Edit the Tag Count column to control how many copies print per product.
           </div>
         </div>
       </div>
