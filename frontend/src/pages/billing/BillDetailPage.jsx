@@ -51,6 +51,8 @@ function buildReceiptHTML(bill) {
       ${taxRow}
       <hr class="receipt-divider" />
       <div class="receipt-total-row"><span>TOTAL</span><span>${fmt(bill.total)}</span></div>
+      <div class="receipt-total-row"><span>Paid Amount</span><span>${fmt(bill.customer_paid)}</span></div>
+      <div class="receipt-total-row"><span>Balance</span><span>${fmt(bill.customer_paid-bill.total)}</span></div>
       <div class="receipt-row" style="margin-top:4px;">
         <span>Payment</span>
         <span style="text-transform:capitalize">${bill.payment_method}</span>
@@ -211,6 +213,14 @@ export default function BillDetailPage() {
                 <div className="bill-summary-row total-row">
                   <span>Total</span>
                   <span>{fmt(bill.total)}</span>
+                </div>
+                <div className="bill-summary-row total-row">
+                  <span>Paid Amount</span>
+                  <span>{fmt(bill.customer_paid)}</span>
+                </div>
+                <div className="bill-summary-row total-row">
+                  <span>Balance</span>
+                  <span>{fmt(bill.customer_paid-bill.total)}</span>
                 </div>
               </div>
               {bill.notes && (

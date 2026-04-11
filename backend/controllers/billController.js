@@ -63,7 +63,7 @@ const create = async (req, res) => {
   try {
     await conn.beginTransaction();
 
-    const { customer_name, customer_phone, items, discount = 0, tax = 0, payment_method = 'cash', notes } = req.body;
+    const { customer_name, customer_phone, items, discount = 0, tax = 0, payment_method = 'cash', notes, customer_paid } = req.body;
 
     if (!items || !items.length)
       return res.status(400).json({ message: 'At least one item required' });
@@ -89,9 +89,9 @@ const create = async (req, res) => {
     const bill_number = generateBillNumber();
 
     const [billResult] = await conn.query(
-      `INSERT INTO bills (bill_number, customer_name, customer_phone, subtotal, discount, tax, total, payment_method, notes, created_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [bill_number, customer_name || null, customer_phone || null, subtotal, discount, tax, total, payment_method, notes || null, req.user.id]
+      `INSERT INTO bills (bill_number, customer_name, customer_phone, subtotal, discount, tax, total, payment_method, notes,customer_paid, created_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`,
+      [bill_number, customer_name || null, customer_phone || null, subtotal, discount, tax, total, payment_method, notes || null,customer_paid, req.user.id]
     );
     const billId = billResult.insertId;
 

@@ -337,6 +337,7 @@ export default function BillingPage() {
   const [tax, setTax] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [notes, setNotes] = useState('');
+  const [paidAmount, setPaidAmount] = useState('');
 
   // Called by BarcodeScanner when a code is detected
   const handleScan = (code) => {
@@ -442,6 +443,7 @@ export default function BillingPage() {
       tax: taxAmt,
       payment_method: paymentMethod,
       notes,
+      customer_paid : paidAmount
     });
   };
 
@@ -499,7 +501,7 @@ export default function BillingPage() {
                 </div>
                 <button className="btn btn-primary" onClick={() => searchProduct(codeInput)} disabled={searching}>
                   {searching ? <span className="spinner" style={{ width: 14, height: 14 }} /> : (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                   )}
                   Add
                 </button>
@@ -510,8 +512,8 @@ export default function BillingPage() {
                   style={{ flexShrink: 0 }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 15, height: 15 }}>
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                    <circle cx="12" cy="13" r="4"/>
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                    <circle cx="12" cy="13" r="4" />
                   </svg>
                   Camera
                 </button>
@@ -528,7 +530,7 @@ export default function BillingPage() {
             <div className="card-body" style={{ paddingTop: 12 }}>
               {!items.length ? (
                 <div className="empty-state" style={{ padding: 32 }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ width: 36, height: 36 }}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ width: 36, height: 36 }}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>
                   <p>No items added yet</p>
                 </div>
               ) : (
@@ -563,7 +565,7 @@ export default function BillingPage() {
                         <div style={{ fontSize: 10, color: 'var(--text3)' }}>{fmt(item.unit_price)} ea</div>
                       </div>
                       <button className="btn btn-danger btn-icon" style={{ width: 28, height: 28 }} onClick={() => removeItem(idx)}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 12, height: 12 }}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 12, height: 12 }}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                       </button>
                     </div>
                   ))}
@@ -614,6 +616,17 @@ export default function BillingPage() {
                   <input className="form-input" type="number" min="0" placeholder="0.00" value={tax} onChange={e => setTax(e.target.value)} />
                 </div>
                 <div className="form-group">
+                  <label className="form-label">Customer Paid (LKR)</label>
+                  <input
+                    className="form-input"
+                    type="number"
+                    min="0"
+                    placeholder="0.00"
+                    value={paidAmount}
+                    onChange={e => setPaidAmount(e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
                   <label className="form-label">Notes</label>
                   <textarea className="form-textarea" rows={2} placeholder="Optional notes..." value={notes} onChange={e => setNotes(e.target.value)} />
                 </div>
@@ -636,7 +649,7 @@ export default function BillingPage() {
                 {createMutation.isPending
                   ? <><span className="spinner" style={{ width: 15, height: 15 }} /> Creating Bill...</>
                   : <>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ width: 16, height: 16 }}><polyline points="20 6 9 17 4 12"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ width: 16, height: 16 }}><polyline points="20 6 9 17 4 12" /></svg>
                     Create Bill
                   </>}
               </button>
